@@ -1,6 +1,10 @@
 #include "esphome.h"
 
 class JiecangDeskSensor : public PollingComponent, public UARTDevice {
+    private:
+        float physical_min = 0;
+        float physical_max = 0;
+
     public:
         JiecangDeskSensor(UARTComponent *parent) : UARTDevice(parent) {}
 
@@ -65,11 +69,15 @@ class JiecangDeskSensor : public PollingComponent, public UARTDevice {
             } else if (message[0] == 0x20) {
                 ESP_LOGV("jiecang_desk_sensor", "limits 0x%0X  max %i min %i", message[2], (message[2] & 1), (message[2]>>4));
                 if ((message[2] & 1) == 0) { // low nibble 0 -> no max limit
-                    height_max->publish_state(0);
+                    height_max->publish_state(physical_max);
                 }
                 if ((message[2]>>4) == 0) { // high nibble 0 -> no min limit
-                    height_min->publish_state(0);
+                    height_min->publish_state(physical_min);
                 }
+            } else if (message[0] == 0x07) {
+                ESP_LOGV("jiecang_desk_sensor", "physical limits 0x%02X%02X 0x%02X%02X", message[2], message[3], message[4], message[5]);
+                physical_max = byte2float(message[2], message[3]);
+                physical_min = byte2float(message[4], message[5]);
             } else if (message[0] == 0x21) {
                 ESP_LOGV("jiecang_desk_sensor", "height_max 0x%02X%02X", message[2], message[3]);
                 height_max->publish_state(byte2float(message[2], message[3]));

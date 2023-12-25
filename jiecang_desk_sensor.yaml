@@ -4,11 +4,13 @@ esphome:
   includes:
     - jiecang_desk_sensor.h
   on_boot:
-    priority: 0
+    priority: 0 # when mostly everything else is done
     then:
-      - uart.write: [0xF1, 0xF1, 0x07, 0x00, 0x07, 0x7e]
+      - uart.write: [0xF1, 0xF1, 0x0C, 0x00, 0x0C, 0x7e] # request physical limits
       - delay: 0.1s
-      - uart.write: [0xF1, 0xF1, 0x20, 0x00, 0x20, 0x7e]
+      - uart.write: [0xF1, 0xF1, 0x07, 0x00, 0x07, 0x7e] # request settings
+      - delay: 0.1s
+      - uart.write: [0xF1, 0xF1, 0x20, 0x00, 0x20, 0x7e] # request limits
 
 esp8266:
   board: esp01_1m
@@ -35,7 +37,6 @@ wifi:
     password: "9ebc6eac0b4e0e26b8d3b955ec660557"
 
 captive_portal:
-
 
 uart:
   id: uart_bus
@@ -86,6 +87,52 @@ sensor:
       accuracy_decimals: 1
 
 
+select:
+  - platform: template
+    name: Unit
+    id: unit
+    options:
+     - "cm"
+     - "inch"
+    initial_option: "cm"
+    optimistic: true
+    set_action:
+      then:
+        - if:
+            condition:
+              - lambda: |- 
+                  return id(unit).state == "cm" ;
+            then:
+              - uart.write: [0xF1, 0xF1, 0x0E, 0x01, 0x00, 0x0F, 0x7e]
+            else:
+              - uart.write: [0xF1, 0xF1, 0x0E, 0x01, 0x01, 0x10, 0x7e]
+#  - platform: template
+#    name: "Anti collision sensitivity"
+#    id: anti_collision
+#    options:
+#     - "High"
+#     - "Medium"
+#     - "Low"
+#    initial_option: "High"
+#    optimistic: true
+#    set_action:
+#      then:
+#        - if:
+#            condition:
+#              - lambda: |- 
+#                  return id(unit).state == "High" ;
+#            then:
+#              - uart.write: [0xF1, 0xF1, 0x1D, 0x01, 0x01, 0x1F, 0x7e]
+#            else:
+#              - if:
+#                  condition:
+#                    - lambda: |- 
+#                        return id(unit).state == "Medium" ;
+#                  then:
+#                    - uart.write: [0xF1, 0xF1, 0x1D, 0x01, 0x02, 0x20, 0x7e]
+#                  else:
+#                    - uart.write: [0xF1, 0xF1, 0x1D, 0x01, 0x03, 0x21, 0x7e]
+
 button:
   - platform: uart
     name: "Raise"
@@ -111,23 +158,30 @@ button:
   - platform: uart
     name: "Request Limits"
     data: [0xF1, 0xF1, 0x20, 0x00, 0x20, 0x7e]
-
-select:
-  - platform: template
-    name: Unit
-    id: unit
-    options:
-     - "cm"
-     - "inch"
-    initial_option: "cm"
-    optimistic: true
-    set_action:
-      then:
-        - if:
-            condition:
-              - lambda: |- 
-                  return id(unit).state == "cm" ;
-            then:
-              - uart.write: [0xF1, 0xF1, 0x0E, 0x01, 0x00, 0x0F, 0x7e]
-            else:
-              - uart.write: [0xF1, 0xF1, 0x0E, 0x01, 0x01, 0x10, 0x7e]
+#  - platform: uart
+#    name: "Wake"
+#    data: [0xF1, 0xF1, 0x29, 0x00, 0x29, 0x7e]
+#  - platform: uart
+#    name: "Set Limit Max"
+#    data: [0xF1, 0xF1, 0x21, 0x00, 0x21, 0x7e]
+#  - platform: uart
+#    name: "Set Limit Min"
+#    data: [0xF1, 0xF1, 0x22, 0x00, 0x22, 0x7e]
+#  - platform: uart
+#    name: "Clear Limit Max"
+#    data: [0xF1, 0xF1, 0x23, 0x01, 0x01, 0x25, 0x7e]
+#  - platform: uart
+#    name: "Clear Limit Min"
+#    data: [0xF1, 0xF1, 0x23, 0x01, 0x02, 0x26, 0x7e]
+#  - platform: uart
+#    name: "Set Position 1"
+#    data: [0xF1, 0xF1, 0x03, 0x00, 0x03, 0x7e]
+#  - platform: uart
+#    name: "Set Position 2"
+#    data: [0xF1, 0xF1, 0x04, 0x00, 0x04, 0x7e]
+#  - platform: uart
+#    name: "Set Position 3"
+#    data: [0xF1, 0xF1, 0x25, 0x00, 0x25, 0x7e]
+#  - platform: uart
+#    name: "Set Position 4"
+#    data: [0xF1, 0xF1, 0x26, 0x00, 0x26, 0x7e]
