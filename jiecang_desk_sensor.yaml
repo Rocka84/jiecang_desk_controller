@@ -133,24 +133,60 @@ select:
 #                    - uart.write: [0xF1, 0xF1, 0x1D, 0x01, 0x03, 0x21, 0x7e]
 
 button:
-  - platform: uart
-    name: "Raise"
-    data: [0xF1, 0xF1, 0x01, 0x00, 0x01, 0x7e]
-  - platform: uart
-    name: "Lower"
-    data: [0xF1, 0xF1, 0x02, 0x00, 0x02, 0x7e]
-  - platform: uart
+  - platform: template
+    name: "Move up"
+    on_press:
+      - lambda: |-
+          if (id(moving) != 0) {
+            id(moving) = 0;
+          } else {
+            id(moving) = 1;
+            id(move_up).execute();
+          }
+  - platform: template
+    name: "Move down"
+    on_press:
+      - lambda: |-
+          if (id(moving) != 0) {
+            id(moving) = 0;
+          } else {
+            id(moving) = 2;
+            id(move_down).execute();
+          }
+  - platform: template
+    name: "Move stop"
+    on_press:
+      - lambda: 'id(moving) = 0;'
+  - platform: template
+    name: "Step up"
+    on_press:
+      - uart.write: [0xF1, 0xF1, 0x01, 0x00, 0x01, 0x7e]
+      - lambda: 'id(moving) = 0;'
+  - platform: template
+    name: "Step down"
+    on_press:
+      - uart.write: [0xF1, 0xF1, 0x02, 0x00, 0x02, 0x7e]
+      - lambda: 'id(moving) = 0;'
+  - platform: template
     name: "Position 1"
-    data: [0xF1, 0xF1, 0x05, 0x00, 0x05, 0x7e]
-  - platform: uart
+    on_press:
+      - uart.write: [0xF1, 0xF1, 0x05, 0x00, 0x05, 0x7e]
+      - lambda: 'id(moving) = 0;'
+  - platform: template
     name: "Position 2"
-    data: [0xF1, 0xF1, 0x06, 0x00, 0x06, 0x7e]
-  - platform: uart
+    on_press:
+      - uart.write: [0xF1, 0xF1, 0x06, 0x00, 0x06, 0x7e]
+      - lambda: 'id(moving) = 0;'
+  - platform: template
     name: "Position 3"
-    data: [0xF1, 0xF1, 0x27, 0x00, 0x27, 0x7e]
-  - platform: uart
+    on_press:
+      - uart.write: [0xF1, 0xF1, 0x27, 0x00, 0x27, 0x7e]
+      - lambda: 'id(moving) = 0;'
+  - platform: template
     name: "Position 4"
-    data: [0xF1, 0xF1, 0x28, 0x00, 0x28, 0x7e]
+    on_press:
+      - uart.write: [0xF1, 0xF1, 0x28, 0x00, 0x28, 0x7e]
+      - lambda: 'id(moving) = 0;'
   - platform: uart
     name: "Request Settings"
     data: [0xF1, 0xF1, 0x07, 0x00, 0x07, 0x7e]
@@ -184,3 +220,31 @@ button:
 #  - platform: uart
 #    name: "Set Position 4"
 #    data: [0xF1, 0xF1, 0x26, 0x00, 0x26, 0x7e]
+
+
+globals:
+  - id: moving
+    type: int
+    restore_value: no
+    initial_value: "0"
+
+script:
+  - id: move_up
+    mode: single
+    then:
+      - while:
+          condition:
+            lambda: 'return id(moving) == 1 && id(desk_height).state < id(desk_height_max).state - 0.1;'
+          then:
+            - uart.write: [0xF1, 0xF1, 0x01, 0x00, 0x01, 0x7e]
+            - delay: 0.5s
+  - id: move_down
+    mode: single
+    then:
+      - while:
+          condition:
+            lambda: 'return id(moving) == 2 && id(desk_height).state > id(desk_height_min).state + 0.1;'
+          then:
+            - uart.write: [0xF1, 0xF1, 0x02, 0x00, 0x02, 0x7e]
+            - delay: 0.5s
+
