@@ -1,6 +1,6 @@
 esphome:
-  name: esphome-desk
-  friendly_name: ESPHome Desk
+  name: jiecang_desk_sensor
+  friendly_name: Jiecang Desk Sensor
   includes:
     - jiecang_desk_sensor.h
   on_boot:
@@ -49,12 +49,15 @@ sensor:
   lambda: |-
     auto desk = new JiecangDeskSensor(id(uart_bus));
     App.register_component(desk);
-    return {desk->height,desk->unit,desk->height_min,desk->height_max,desk->position1,desk->position2,desk->position3,desk->position4};
+    return {desk->height,desk->height_pct,desk->unit,desk->height_min,desk->height_max,desk->position1,desk->position2,desk->position3,desk->position4};
   sensors:
     - id: "desk_height"
       name: "Height"
       unit_of_measurement: cm
       accuracy_decimals: 1
+    - id: "desk_height_pct"
+      name: "Height Percent"
+      unit_of_measurement: "%"
     - id: "desk_height_unit"
       on_value:
         then:

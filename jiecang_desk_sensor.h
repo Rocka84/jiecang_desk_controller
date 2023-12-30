@@ -14,6 +14,8 @@ class JiecangDeskSensor : public PollingComponent, public UARTDevice {
         Sensor *height_min = new Sensor();
         Sensor *height_max = new Sensor();
 
+        Sensor *height_pct = new Sensor();
+
         Sensor *position1 = new Sensor();
         Sensor *position2 = new Sensor();
         Sensor *position3 = new Sensor();
@@ -63,6 +65,7 @@ class JiecangDeskSensor : public PollingComponent, public UARTDevice {
             if (message[0] == 1) {
                 ESP_LOGV("jiecang_desk_sensor", "height 0x%0X%0X", message[2], message[3]);
                 height->publish_state(byte2float(message[2], message[3]));
+                height_pct->publish_state((height->state - height_min->state) / (height_max->state - height_min->state) * 100);
             } else if (message[0] == 0xe) {
                 ESP_LOGV("jiecang_desk_sensor", "unit 0x%0X", message[2]);
                 unit->publish_state(message[2]);
