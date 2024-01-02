@@ -1,5 +1,5 @@
 esphome:
-  name: jiecang_desk_controller
+  name: jiecang-desk-controller
   friendly_name: Jiecang Desk Controller
   includes:
     - jiecang_desk_sensor.h
