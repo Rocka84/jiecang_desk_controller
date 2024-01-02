@@ -22,36 +22,41 @@ class JiecangDeskSensor : public PollingComponent, public UARTDevice {
         Sensor *position4 = new Sensor();
 
 
-        void setup() override {
-            // request limits
-            // unsigned int messages[] = {0xF1, 0xF1, 0x07, 0x00, 0x07, 0x7e};
-            // for(auto byte : messages) write(byte);
-        }
-
-        bool bufferMessage(int readch, unsigned int *buffer, int len)
+        bool bufferMessage(int data, unsigned int *buffer, int len)
         {
-            static bool cmd_incoming = false;
+            // This is a really rudimentary method for receiving
+            // messages from the desk. It __will fail__ on messages
+            // that contain the value 0x7E in their payload.
+            // But it is super simple and works for the messages
+            // we care about.
+
+            static int cmd_incoming = 0; // 0: wait for F2, 1: wait for 2nd F2, 2: buffer data
             static int pos = 0;
 
-            switch (readch) {
-                case 0xF2: // start of message
-                    cmd_incoming = true;
-                    break;
-                case 0x7e: // end of message
-                    cmd_incoming = false;
+            if (cmd_incoming < 2 && data == 0xF2) { // start of message, must appear twice
+                cmd_incoming++;
+                pos = 0;
+
+            } else if (cmd_incoming == 1) { // no second F2 received
+                cmd_incoming = 0;
+
+            } else if (cmd_incoming == 2) {
+                if (data == 0x7E) { // end of message
+                    cmd_incoming = 0;
                     for (;pos<len-1;pos++) { // fill rest of buffer with zeros
                         buffer[pos]=0;
                     }
-                    pos = 0;
                     return true;
-                default:
-                    if (cmd_incoming && pos < len) {
-                        buffer[pos++] = readch;
-                    }
-            }
-            if (cmd_incoming && pos >= len) {
-                cmd_incoming=false;
-            }
+
+                } else if (pos >= len) { // message too long, drop it
+                    cmd_incoming = 0;
+
+                } else {
+                    buffer[pos++] = data; // buffer data
+                }
+
+            } // else: received garbage
+
             return false;
         }
 
