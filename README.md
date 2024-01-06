@@ -66,11 +66,14 @@ The default/minimal version only contains basic functionality. This should cover
 #### full
 
 The full version contains most known functions of the serial protocol. Many if them are commented out by default, you can
-uncomment what you need.
-It also implents an __experimental__ continuous movement mode which basicly simulates holding the up/down buttons.
+uncomment what you need and/or copy paste it to the simple sketch.
+It also implements an __experimental__ continuous movement mode which basicly simulates holding the up/down buttons.
 
-[!CAUTION]
-Continous movement can only be stopped via this controller! The buttons of the original controller will have no effect!
+> [!CAUTION]
+> Continous movement can only be stopped via this controller! __The buttons of the original controller will not stop the movement!__  
+> This can cause damage or even hurt someone, use at own risk!
+
+If you only need some of the extended functionality I recommend to copy only those part to the minimal version.
 
 ## Sources
 
