@@ -1,5 +1,10 @@
 # ESPHome Jiecang Desk Controller
 
+
+> [!IMPORTANT]
+> This project is **deprecated** and superseded by https://github.com/Rocka84/esphome_components/tree/master/components/jiecang_desk_controller
+
+
 Sensors and Actors for Jiecang Desk controle boxes using [ESPHome](https://esphome.io/).
 
 Attention: I only have a RJ12 desk controller to test this but chances are very high
